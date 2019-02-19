@@ -1,6 +1,13 @@
 package opt.test;
 
+import java.io.IOException;
+import java.nio.charset.Charset;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Random;
 
 import opt.ga.MaxKColorFitnessFunction;
@@ -42,6 +49,17 @@ public class MaxKColoringTest {
     private static final int N = 50; // number of vertices
     private static final int L =4; // L adjacent nodes per vertex
     private static final int K = 8; // K possible colors
+
+    private static List<Double> rhcList = new ArrayList<>();
+    private static List<Long> rhcTimes = new ArrayList<>();
+    private static List<Double> saList = new ArrayList<>();
+    private static List<Long> saTimes = new ArrayList<>();
+    private static List<Double> gaList = new ArrayList<>();
+    private static List<Long> gaTimes = new ArrayList<>();
+    private static List<Double> mimicList = new ArrayList<>();
+    private static List<Long> mimicTimes = new ArrayList<>();
+    private static List<String> lines = new ArrayList<>();
+    
     /**
      * The test main
      * @param args ignored
@@ -77,8 +95,8 @@ public class MaxKColoringTest {
         long starttime = System.currentTimeMillis();
         RandomizedHillClimbing rhc = new RandomizedHillClimbing(hcp);      
         FixedIterationTrainer fit = new FixedIterationTrainer(rhc, 20000);
-        fit.train();
-        System.out.println("RHC: " + ef.value(rhc.getOptimal()));
+        fit.train(rhcList, rhcTimes);
+        System.out.println(ef.value(rhc.getOptimal()) + " " + lowestMax(rhcList) + " " + String.valueOf(rhcTimes.get(lowestMax(rhcList)) - rhcTimes.get(0)));
         System.out.println(ef.foundConflict());
         System.out.println("Time : "+ (System.currentTimeMillis() - starttime));
         
@@ -87,8 +105,8 @@ public class MaxKColoringTest {
         starttime = System.currentTimeMillis();
         SimulatedAnnealing sa = new SimulatedAnnealing(1E12, .1, hcp);
         fit = new FixedIterationTrainer(sa, 20000);
-        fit.train();
-        System.out.println("SA: " + ef.value(sa.getOptimal()));
+        fit.train(saList, saTimes);
+        System.out.println(ef.value(sa.getOptimal()) + " " + lowestMax(saList) + " " + String.valueOf(saTimes.get(lowestMax(saList)) - saTimes.get(0)));
         System.out.println(ef.foundConflict());
         System.out.println("Time : "+ (System.currentTimeMillis() - starttime));
         
@@ -97,8 +115,8 @@ public class MaxKColoringTest {
         starttime = System.currentTimeMillis();
         StandardGeneticAlgorithm ga = new StandardGeneticAlgorithm(200, 10, 60, gap);
         fit = new FixedIterationTrainer(ga, 50);
-        fit.train();
-        System.out.println("GA: " + ef.value(ga.getOptimal()));
+        fit.train(gaList, gaTimes);
+        System.out.println(ef.value(ga.getOptimal()) + " " + lowestMax(gaList) + " " + String.valueOf(gaTimes.get(lowestMax(gaList)) - gaTimes.get(0)));
         System.out.println(ef.foundConflict());
         System.out.println("Time : "+ (System.currentTimeMillis() - starttime));
         
@@ -107,10 +125,40 @@ public class MaxKColoringTest {
         starttime = System.currentTimeMillis();
         MIMIC mimic = new MIMIC(200, 100, pop);
         fit = new FixedIterationTrainer(mimic, 5);
-        fit.train();
-        System.out.println("MIMIC: " + ef.value(mimic.getOptimal()));  
+        fit.train(mimicList, mimicTimes);
+        System.out.println(ef.value(mimic.getOptimal()) + " " + lowestMax(mimicList) + " " + String.valueOf(mimicTimes.get(lowestMax(mimicList)) - mimicTimes.get(0)));
         System.out.println(ef.foundConflict());
         System.out.println("Time : "+ (System.currentTimeMillis() - starttime));
-        
+
+        for (int i = 0; i < rhcList.size(); i++) {
+            String rhcVal = (i < rhcList.size()) ? String.valueOf(rhcList.get(i)) + ", " : String.valueOf(rhcList.get(rhcList.size() - 1));
+            String saVal = (i < saList.size()) ? String.valueOf(saList.get(i)) + ", " : String.valueOf(saList.get(saList.size() - 1));
+            String gaVal = (i < gaList.size()) ? String.valueOf(gaList.get(i)) + ", " : String.valueOf(gaList.get(gaList.size() - 1));
+            String mimicVal = (i < mimicList.size()) ? String.valueOf(mimicList.get(i)) + ", " : String.valueOf(mimicList.get(mimicList.size() - 1));
+            String rhcTime = (i < rhcTimes.size()) ? String.valueOf(rhcTimes.get(i)) + ", " : String.valueOf(rhcTimes.get(rhcTimes.size() - 1));
+            String saTime = (i < saTimes.size()) ? String.valueOf(saTimes.get(i)) + ", " : String.valueOf(saTimes.get(saTimes.size() - 1));
+            String gaTime = (i < gaTimes.size()) ? String.valueOf(gaTimes.get(i)) + ", " : String.valueOf(gaTimes.get(gaTimes.size() - 1));
+            String mimicTime = (i < mimicTimes.size()) ? String.valueOf(mimicTimes.get(i)) + ", " : String.valueOf(mimicTimes.get(mimicTimes.size() - 1));
+
+            lines.add(i + ", " + rhcVal + saVal + gaVal + mimicVal + rhcTime + saTime + gaTime + mimicTime);
+        }
+
+        try {
+            Path file = Paths.get("src/opt/test/MaxKColoring.csv");
+            Files.write(file, lines, Charset.forName("UTF-8"));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static int lowestMax(List<Double> dubs) {
+        double max = dubs.get(dubs.size() - 1);
+        for (int i = dubs.size() - 1; i >= 0; i--) {
+            if (dubs.get(i) < max) {
+                return i + 1;
+            }
+        }
+
+        return -1;
     }
 }
