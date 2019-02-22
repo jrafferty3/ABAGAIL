@@ -60,14 +60,6 @@ public class KnapsackTest {
     private static final double MAX_KNAPSACK_WEIGHT =
          MAX_WEIGHT * NUM_ITEMS * COPIES_EACH * .4;
          
-    private static List<Double> rhcList = new ArrayList<>();
-    private static List<Long> rhcTimes = new ArrayList<>();
-    private static List<Double> saList = new ArrayList<>();
-    private static List<Long> saTimes = new ArrayList<>();
-    private static List<Double> gaList = new ArrayList<>();
-    private static List<Long> gaTimes = new ArrayList<>();
-    private static List<Double> mimicList = new ArrayList<>();
-    private static List<Long> mimicTimes = new ArrayList<>();
     private static List<String> lines = new ArrayList<>();
 
     /**
@@ -98,40 +90,22 @@ public class KnapsackTest {
         GeneticAlgorithmProblem gap = new GenericGeneticAlgorithmProblem(ef, odd, mf, cf);
         ProbabilisticOptimizationProblem pop = new GenericProbabilisticOptimizationProblem(ef, odd, df);
         
-        RandomizedHillClimbing rhc = new RandomizedHillClimbing(hcp);      
-        FixedIterationTrainer fit = new FixedIterationTrainer(rhc, 1000);
-        fit.train(rhcList, rhcTimes);
-        System.out.println(ef.value(rhc.getOptimal()));
-        
+        RandomizedHillClimbing rhc = new RandomizedHillClimbing(hcp);   
         SimulatedAnnealing sa = new SimulatedAnnealing(100, .95, hcp);
-        fit = new FixedIterationTrainer(sa, 1000);
-        fit.train(saList, saTimes);
-        System.out.println(ef.value(sa.getOptimal()));
-        
         StandardGeneticAlgorithm ga = new StandardGeneticAlgorithm(300, 150, 50, gap);
-        fit = new FixedIterationTrainer(ga, 1000);
-        fit.train(gaList, gaTimes);
-        System.out.println(ef.value(ga.getOptimal()));
-        
         MIMIC mimic = new MIMIC(200, 100, pop);
-        fit = new FixedIterationTrainer(mimic, 1000);
-        fit.train(mimicList, mimicTimes);
-        System.out.println(ef.value(mimic.getOptimal()));
         
+        lines.add("Iteration,RHC,SA,GA,MIMIC");
         
-        for (int i = 0; i < rhcList.size(); i++) {
-            String rhcVal = (i < rhcList.size()) ? String.valueOf(rhcList.get(i)) + ", " : String.valueOf(rhcList.get(rhcList.size() - 1));
-            String saVal = (i < saList.size()) ? String.valueOf(saList.get(i)) + ", " : String.valueOf(saList.get(saList.size() - 1));
-            String gaVal = (i < gaList.size()) ? String.valueOf(gaList.get(i)) + ", " : String.valueOf(gaList.get(gaList.size() - 1));
-            String mimicVal = (i < mimicList.size()) ? String.valueOf(mimicList.get(i)) + ", " : String.valueOf(mimicList.get(mimicList.size() - 1));
-            String rhcTime = (i < rhcTimes.size()) ? String.valueOf(rhcTimes.get(i)) + ", " : String.valueOf(rhcTimes.get(rhcTimes.size() - 1));
-            String saTime = (i < saTimes.size()) ? String.valueOf(saTimes.get(i)) + ", " : String.valueOf(saTimes.get(saTimes.size() - 1));
-            String gaTime = (i < gaTimes.size()) ? String.valueOf(gaTimes.get(i)) + ", " : String.valueOf(gaTimes.get(gaTimes.size() - 1));
-            String mimicTime = (i < mimicTimes.size()) ? String.valueOf(mimicTimes.get(i)) + ", " : String.valueOf(mimicTimes.get(mimicTimes.size() - 1));
-
-            lines.add(i + ", " + rhcVal + saVal + gaVal + mimicVal + rhcTime + saTime + gaTime + mimicTime);
+        for(int i = 0; i < 1000; i++)
+        {
+            Double rhcVal = rhc.train();
+            Double saVal = sa.train();
+            Double gaVal = ga.train();
+            Double mimicVal = mimic.train();
+            
+            lines.add(i + ", " + rhcVal + "," + saVal + "," + gaVal + "," + mimicVal);
         }
-
         try {
             Path file = Paths.get("src/opt/test/Knapsack.csv");
             Files.write(file, lines, Charset.forName("UTF-8"));

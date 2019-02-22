@@ -93,7 +93,7 @@ public class AdultRHCOptimal {
             
             for(int i = 0; i < oa.length; i++) {
                 networks[i] = factory.createClassificationNetwork(
-                        new int[] {inputLayer, 14, 14, 14, outputLayer});
+                        new int[] {inputLayer, 14, 14, 14, 14, outputLayer});
                 nnop[i] = new NeuralNetworkOptimizationProblem(train, networks[i], measure);
             }
             
