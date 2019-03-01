@@ -42,7 +42,7 @@ import shared.FixedIterationTrainer;
  */
 public class NQueensTest {
     /** The n value */
-    private static final int N = 20;
+    private static final int N = 25;
     /** The t value */
 
     private static List<Double> rhcList = new ArrayList<>();
@@ -72,8 +72,8 @@ public class NQueensTest {
         ProbabilisticOptimizationProblem pop = new GenericProbabilisticOptimizationProblem(ef, odd, df);
         
         RandomizedHillClimbing rhc = new RandomizedHillClimbing(hcp);   
-        SimulatedAnnealing sa = new SimulatedAnnealing(1E1, .1, hcp);
-        StandardGeneticAlgorithm ga = new StandardGeneticAlgorithm(200, 0, 10, gap);
+        SimulatedAnnealing sa = new SimulatedAnnealing(1E3, .1, hcp);
+        StandardGeneticAlgorithm ga = new StandardGeneticAlgorithm(200, 10, 10, gap);
         MIMIC mimic = new MIMIC(200, 10, pop);
         
         lines.add("Iteration,RHC,SA,GA,MIMIC");

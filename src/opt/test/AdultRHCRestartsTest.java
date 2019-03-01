@@ -75,7 +75,7 @@ public class AdultRHCRestartsTest {
 
                 Instance output = trainInstances[j].getLabel(), example = new Instance(network.getOutputValues());
                 example.setLabel(new Instance(Double.parseDouble(network.getOutputValues().toString())));
-                trainError += measure.value(output, example) / 32561;
+                trainError += measure.value(output, example) / trainInstances.length;
             }
             
             trainErrors.add(trainError);
@@ -86,7 +86,7 @@ public class AdultRHCRestartsTest {
                 
                 Instance output = testInstances[j].getLabel(), example = new Instance(network.getOutputValues());
                 example.setLabel(new Instance(Double.parseDouble(network.getOutputValues().toString())));
-                testError += measure.value(output, example) / 32561;
+                testError += measure.value(output, example) / testInstances.length;
             }
             
             testErrors.add(testError);

@@ -25,14 +25,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
 
-/**
- * Implementation of randomized hill climbing, simulated annealing, and genetic algorithm to
- * find optimal weights to a neural network that is classifying abalone as having either fewer 
- * or more than 15 rings. 
- *
- * @author Hannah Lau
- * @version 1.0
- */
 public class AdultTempSATest {
     private static Instance[] instances = initializeInstances();
 
@@ -43,15 +35,9 @@ public class AdultTempSATest {
 
     private static DataSet set = new DataSet(instances);
 
-    //private static FeedForwardNetwork networks[] = new FeedForwardNetwork[100];
     private static FeedForwardNetwork networks[] = new FeedForwardNetwork[6];
-    //private static NeuralNetworkOptimizationProblem[] nnop = new NeuralNetworkOptimizationProblem[100];
     private static NeuralNetworkOptimizationProblem[] nnop = new NeuralNetworkOptimizationProblem[6];
-
-    //private static OptimizationAlgorithm[] oa = new OptimizationAlgorithm[100];
     private static OptimizationAlgorithm[] oa = new OptimizationAlgorithm[6];
-    //private static String[] oaNames = new String[100];
-    //private static String[] oaNames = new String[3];
     private static String[] oaNames = {"SA", "SA", "SA", "SA", "SA", "SA"};
     private static String results = "";
     private static List<List<Double>> oaResultsTrain = new ArrayList<>();
@@ -74,59 +60,29 @@ public class AdultTempSATest {
         
         for(int i = 0; i < oa.length; i++) {
             networks[i] = factory.createClassificationNetwork(
-                    new int[] {inputLayer, 14, 14, 14, outputLayer});
+                    new int[] {inputLayer, 14, 14, 14, 14, outputLayer});
             nnop[i] = new NeuralNetworkOptimizationProblem(train, networks[i], measure);
         }
         
-        oa[0] = new SimulatedAnnealing(1E4, .35, nnop[0]);
-        oa[1] = new SimulatedAnnealing(1E6, .35, nnop[1]);
-        oa[2] = new SimulatedAnnealing(1E8, .35, nnop[2]);
-        oa[3] = new SimulatedAnnealing(1E10, .35, nnop[3]);
-        oa[4] = new SimulatedAnnealing(1E12, .35, nnop[4]);
-        oa[5] = new SimulatedAnnealing(1E14, .35, nnop[5]);
+        oa[0] = new SimulatedAnnealing(10, .65, nnop[0]);
+        oa[1] = new SimulatedAnnealing(1E6, .65, nnop[1]);
+        oa[2] = new SimulatedAnnealing(1E8, .65, nnop[2]);
+        oa[3] = new SimulatedAnnealing(1E10, .65, nnop[3]);
+        oa[4] = new SimulatedAnnealing(1E12, .65, nnop[4]);
+        oa[5] = new SimulatedAnnealing(1E24, .65, nnop[5]);
         
         for (int i = 0; i < oa.length; i++) {
             double start = System.nanoTime(), end, trainingTime, testingTime, correct = 0, incorrect = 0;
-            train(oa[i], networks[i], oaNames[i], train, test); //trainer.train();
+            train(oa[i], networks[i], oaNames[i], train, test);
             end = System.nanoTime();
             trainingTime = end - start;
-            trainingTime /= Math.pow(10, 9);
-
-            Instance optimalInstance = oa[i].getOptimal();
-            networks[i].setWeights(optimalInstance.getData());
-
-            double trainError = 0;
-            double testError = 0;
-            Instance[] trainInstances = train.getInstances();
-            Instance[] testInstances = test.getInstances();
-            
-            for(int j = 0; j < trainInstances.length; j++) {
-                networks[i].setInputValues(trainInstances[j].getData());
-                networks[i].run();
-
-                Instance output = trainInstances[j].getLabel(), example = new Instance(networks[i].getOutputValues());
-                example.setLabel(new Instance(Double.parseDouble(networks[i].getOutputValues().toString())));
-                trainError += measure.value(output, example) / 32561;
-                //oaResultsTrain.get(i).add(trainError);
-            }
-            
-            
-            for (int j = 0; j < testInstances.length; j++) {
-                networks[i].setInputValues(testInstances[j].getData());
-                networks[i].run();
-                
-                Instance output = testInstances[j].getLabel(), example = new Instance(networks[i].getOutputValues());
-                example.setLabel(new Instance(Double.parseDouble(networks[i].getOutputValues().toString())));
-                testError += measure.value(output, example) / 32561;
-                //oaResultsTest.get(i).add(testError);
-            }
-            
+            trainingTime /= Math.pow(10, 9);            
         }
         
         List<String> output_lines = new ArrayList<>();
         output_lines.add("Iteration,Temp 4 Train,Temp 6 Train,Temp 8 Train,Temp 10 Train,Temp 12 Train,Temp 14 Train,Temp 4 Test,Temp 6 Test,Temp 8 Test,Temp 10 Test,Temp 12 Test,Temp 14 Test");
         for (int i = 0; i <trainingIterations; i++) {
-            String s = i + ",";
+            String s = (i  + 1) + ",";
             for(int j = 0; j < oa.length; j++){
                 s = s.concat(oaResultsTrain.get(i).get(j) + ",");
             }
@@ -164,8 +120,7 @@ public class AdultTempSATest {
 
                 Instance output = trainInstances[j].getLabel(), example = new Instance(network.getOutputValues());
                 example.setLabel(new Instance(Double.parseDouble(network.getOutputValues().toString())));
-                trainError += measure.value(output, example) / 32561;
-                //lastError = error;
+                trainError += measure.value(output, example) / trainInstances.length;
             }
             
             for (int j = 0; j < testInstances.length; j++) {
@@ -174,16 +129,13 @@ public class AdultTempSATest {
                 
                 Instance output = testInstances[j].getLabel(), example = new Instance(network.getOutputValues());
                 example.setLabel(new Instance(Double.parseDouble(network.getOutputValues().toString())));
-                testError += measure.value(output, example) / 32561;
-                //lastError = error;
+                testError += measure.value(output, example) / testInstances.length;
             }
 
             System.out.println("Iteration " + String.format("%04d" ,i) + ": " + df.format(trainError) + " " + df.format(testError));
             oaResultsTrain.get(i).add(trainError);
             oaResultsTest.get(i).add(testError);
         }
-        
-        //System.out.println(df.format(Double.parseDouble(oaName)) + " " + lastError);
     }
 
     private static Instance[] initializeInstances() {
